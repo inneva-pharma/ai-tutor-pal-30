@@ -33,13 +33,11 @@ export default function Login() {
       {/* Left branding — hidden on mobile */}
       <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center md:flex">
         <div className="flex flex-col items-center gap-4">
-          {/* Robot tablet */}
           <img
             src="/assets/robot-tablet.png"
             alt="MiniTeacher robot con tablet"
             className="h-80 w-auto object-contain drop-shadow-2xl"
           />
-          {/* Logo miniteacher no shape (text logo below robot) */}
           <img
             src="/assets/miniteacher-no-shape.png"
             alt="MiniTeacher logo"
@@ -48,14 +46,25 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right login card — white background */}
-      <div className="relative z-10 flex w-full items-center justify-center px-4 md:w-[50%] md:justify-start md:pl-0 md:pr-12">
+      {/* Right side — on mobile: robot peeking + card + logo below */}
+      <div className="relative z-10 flex w-full flex-col items-center justify-center px-4 py-8 md:w-[50%] md:flex-row md:justify-start md:pl-0 md:pr-12 md:py-0">
+
+        {/* Mobile robot peeking from above the card */}
+        <div className="relative z-20 mb-[-40px] flex justify-center md:hidden">
+          <img
+            src="/assets/robot-tablet.png"
+            alt="MiniTeacher robot"
+            className="h-32 w-auto object-contain drop-shadow-lg"
+          />
+        </div>
+
+        {/* Login card */}
         <div
-          className="w-full max-w-[420px]"
+          className="relative z-10 w-full max-w-[420px]"
           style={{
             background: "#FFFFFF",
             borderRadius: 28,
-            padding: "clamp(32px, 5vw, 52px) clamp(24px, 5vw, 48px)",
+            padding: "clamp(52px, 6vw, 52px) clamp(24px, 5vw, 48px) clamp(32px, 5vw, 52px)",
             boxShadow: "0 12px 48px rgba(0,0,0,0.25)",
           }}
         >
@@ -89,20 +98,6 @@ export default function Login() {
             >
               Ingresa a tu cuenta para continuar
             </p>
-          </div>
-
-          {/* Mobile branding */}
-          <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
-            <img
-              src="/assets/robot-tablet.png"
-              alt="MiniTeacher robot"
-              className="h-28 w-28 object-contain drop-shadow-lg"
-            />
-            <img
-              src="/assets/miniteacher-no-shape.png"
-              alt="MiniTeacher logo"
-              className="h-6 w-auto object-contain"
-            />
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -236,6 +231,15 @@ export default function Login() {
               )}
             </button>
           </form>
+        </div>
+
+        {/* Mobile: miniteacher no shape below the card */}
+        <div className="mt-6 flex justify-center md:hidden">
+          <img
+            src="/assets/miniteacher-no-shape.png"
+            alt="MiniTeacher logo"
+            className="h-8 w-auto object-contain"
+          />
         </div>
       </div>
     </div>
