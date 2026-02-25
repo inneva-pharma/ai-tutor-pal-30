@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const N8N_WEBHOOK_BASE =
-  "https://developerinneva.app.n8n.cloud/webhook/f3f514ca-c651-400e-be68-befd878d2025/unity/reto";
+  "https://developerinneva.app.n8n.cloud/webhook/01f1bbf5-de79-4f6e-845b-2d2a43b9b73a/unity/reto";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
