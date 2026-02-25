@@ -109,29 +109,13 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
     setPhase("loading");
 
     try {
-      // 1. Insert challenge record
-      const accessPermissions = shareWithStudents ? 1 : 0;
-      const { data: challenge, error } = await supabase
-        .from("challenges")
-        .insert({
-          name: name.trim(), topic: topic.trim() || null,
-          grade_id: parseInt(gradeId), subject_id: parseInt(subjectId),
-          language: language === "Español" ? "ES" : language === "English" ? "EN" : "FR",
-          questionCount, difficulty, accessPermissions, user_id: user.id,
-        })
-        .select().single();
-      if (error) throw error;
-
-      setChallengeId(challenge.id);
-
       const gradeName = grades.find((g) => g.id === parseInt(gradeId))?.name ?? "";
       const subjectName = subjects.find((s) => s.id === parseInt(subjectId))?.name ?? "";
 
-      // 2. Call n8n via Edge Function proxy
+      // Call n8n via Edge Function proxy (no DB insert yet)
       const { data: n8nResult, error: fnError } = await supabase.functions.invoke("n8n-proxy", {
         body: {
           accion: "generar",
-          challenge_id: challenge.id,
           user_id: user.id,
           name: name.trim(),
           topic: topic.trim(),
@@ -154,7 +138,7 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
         return;
       }
 
-      // 3. Show review screen (don't save to DB yet)
+      // Show review screen
       setGeneratedQuestions(
         preguntas.map((p: any) => ({
           pregunta: p.pregunta ?? "",
@@ -177,12 +161,26 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
   };
 
   const handleSaveQuestions = async (editedQuestions: ReviewQuestion[]) => {
-    if (!challengeId) return;
+    if (!user) return;
     setSavingQuestions(true);
 
     try {
+      // 1. Create the challenge record now
+      const accessPermissions = shareWithStudents ? 1 : 0;
+      const { data: challenge, error: challengeError } = await supabase
+        .from("challenges")
+        .insert({
+          name: name.trim(), topic: topic.trim() || null,
+          grade_id: parseInt(gradeId), subject_id: parseInt(subjectId),
+          language: language === "Español" ? "ES" : language === "English" ? "EN" : "FR",
+          questionCount: editedQuestions.length, difficulty, accessPermissions, user_id: user.id,
+        })
+        .select().single();
+      if (challengeError) throw challengeError;
+
+      // 2. Insert questions
       const questionsToInsert = editedQuestions.map((q) => ({
-        challenge_id: challengeId,
+        challenge_id: challenge.id,
         question: q.pregunta,
         answer1: q.opciones[0] ?? "",
         answer2: q.opciones[1] ?? "",
@@ -198,12 +196,6 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
         .insert(questionsToInsert);
 
       if (error) throw error;
-
-      // Update question count
-      await supabase
-        .from("challenges")
-        .update({ questionCount: editedQuestions.length })
-        .eq("id", challengeId);
 
       toast.success("¡Reto guardado con éxito!");
       onCreated();
