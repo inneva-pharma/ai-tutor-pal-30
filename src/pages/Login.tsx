@@ -28,45 +28,46 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/assets/background-login.png')" }}>
+    <div className="flex min-h-screen" style={{ background: "#1A2040" }}>
 
       {/* Left branding — hidden on mobile */}
       <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center md:flex">
-        <div className="flex flex-col items-center">
-          <div className="mb-6 flex h-72 w-72 lg:h-80 lg:w-80 items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          {/* Robot tablet */}
+          <img
+            src="/assets/robot-tablet.png"
+            alt="MiniTeacher robot con tablet"
+            className="h-80 w-auto object-contain drop-shadow-2xl"
+          />
+          {/* Logo with miniteacher shape */}
+          <div className="flex items-center gap-3">
             <img
-              src="/assets/mascot.png"
-              alt="MiniTeacher mascot"
-              className="h-full w-full object-contain drop-shadow-2xl"
-              onError={(e) => {
-                const target = e.currentTarget;
-                target.style.display = "none";
-                target.nextElementSibling?.classList.remove("hidden");
-              }}
+              src="/assets/miniteacher-shape.png"
+              alt="MiniTeacher shape"
+              className="h-14 w-auto object-contain"
             />
-            <div className="hidden h-72 w-72 lg:h-80 lg:w-80 items-center justify-center rounded-3xl">
-              <svg viewBox="0 0 120 130" className="h-56 w-56">
-                <ellipse cx="60" cy="50" rx="35" ry="32" fill="white" opacity="0.9"/>
-                <rect x="35" y="75" width="50" height="35" rx="12" fill="white" opacity="0.9"/>
-                <circle cx="47" cy="46" r="8" fill="#222" opacity="0.7"/>
-                <circle cx="73" cy="46" r="8" fill="#222" opacity="0.7"/>
-                <circle cx="49" cy="44" r="3.5" fill="#22D3EE"/>
-                <circle cx="75" cy="44" r="3.5" fill="#22D3EE"/>
-              </svg>
-            </div>
+            <h1
+              className="select-none"
+              style={{
+                fontFamily: "'MuseoModerno', sans-serif",
+                fontSize: 38,
+                fontWeight: 700,
+                color: "#FFFFFF",
+                letterSpacing: "-0.5px",
+              }}
+            >
+              min<span style={{ color: "#F97316" }}>i</span> teacher
+            </h1>
           </div>
-          <h1 className="select-none" style={{ fontSize: 40, fontWeight: 800, color: "#FFFFFF", letterSpacing: "-0.5px" }}>
-            min<span style={{ color: "#F97316" }}>i</span> teacher
-          </h1>
         </div>
       </div>
 
-      {/* Right login card */}
+      {/* Right login card — white background */}
       <div className="relative z-10 flex w-full items-center justify-center px-4 md:w-[50%] md:justify-start md:pl-0 md:pr-12">
         <div
           className="w-full max-w-[420px]"
           style={{
-            background: "#F0F2F8",
+            background: "#FFFFFF",
             borderRadius: 28,
             padding: "clamp(32px, 5vw, 52px) clamp(24px, 5vw, 48px)",
             boxShadow: "0 12px 48px rgba(0,0,0,0.25)",
@@ -75,7 +76,16 @@ export default function Login() {
           {/* Header */}
           <div className="mb-8 text-center">
             <div className="flex items-center justify-center gap-2">
-              <span style={{ color: "#1A1F5E", fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 700 }}>¡Hola!</span>
+              <span
+                style={{
+                  color: "#1A1F5E",
+                  fontSize: "clamp(24px, 4vw, 32px)",
+                  fontWeight: 700,
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
+              >
+                ¡Hola!
+              </span>
               <div
                 className="flex items-center justify-center rounded-full"
                 style={{
@@ -84,21 +94,37 @@ export default function Login() {
                   background: "#F97316",
                 }}
               >
-                <span className="font-bold text-white" style={{ fontSize: "clamp(14px, 2vw, 18px)" }}>M</span>
+                <img
+                  src="/assets/miniteacher-no-shape.png"
+                  alt="MiniTeacher icon"
+                  className="h-6 w-6 object-contain"
+                />
               </div>
             </div>
-            <p style={{ color: "#5A6A9A", fontSize: "clamp(13px, 1.5vw, 15px)", marginTop: 6, fontWeight: 500 }}>
+            <p
+              style={{
+                color: "#5A6A9A",
+                fontSize: "clamp(13px, 1.5vw, 15px)",
+                marginTop: 6,
+                fontWeight: 500,
+                fontFamily: "'Montserrat', sans-serif",
+              }}
+            >
               Ingresa a tu cuenta para continuar
             </p>
           </div>
 
           {/* Mobile branding */}
-          <div className="mb-6 flex flex-col items-center md:hidden">
+          <div className="mb-6 flex flex-col items-center gap-2 md:hidden">
             <img
-              src="/assets/mascot.png"
-              alt="MiniTeacher mascot"
+              src="/assets/robot-tablet.png"
+              alt="MiniTeacher robot"
               className="h-28 w-28 object-contain drop-shadow-lg"
-              onError={(e) => { e.currentTarget.style.display = "none"; }}
+            />
+            <img
+              src="/assets/miniteacher-shape.png"
+              alt="MiniTeacher"
+              className="h-8 w-auto object-contain"
             />
           </div>
 
@@ -107,7 +133,12 @@ export default function Login() {
             <div>
               <label
                 className="mb-2 block"
-                style={{ color: "#1A1F5E", fontSize: 14, fontWeight: 600 }}
+                style={{
+                  color: "#1A1F5E",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
               >
                 Usuario
               </label>
@@ -121,11 +152,12 @@ export default function Login() {
                   height: 48,
                   borderRadius: 50,
                   border: "1.5px solid #D0D5E3",
-                  background: "#FFFFFF",
+                  background: "#F0F2F8",
                   padding: "0 20px",
                   fontSize: 15,
                   color: "#1A1F5E",
                   outline: "none",
+                  fontFamily: "'Montserrat', sans-serif",
                   transition: "border-color 0.2s",
                 }}
                 onFocus={(e) => (e.currentTarget.style.borderColor = "#F97316")}
@@ -137,7 +169,12 @@ export default function Login() {
             <div>
               <label
                 className="mb-2 block"
-                style={{ color: "#1A1F5E", fontSize: 14, fontWeight: 600 }}
+                style={{
+                  color: "#1A1F5E",
+                  fontSize: 14,
+                  fontWeight: 600,
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
               >
                 Contraseña
               </label>
@@ -152,11 +189,12 @@ export default function Login() {
                     height: 48,
                     borderRadius: 50,
                     border: "1.5px solid #D0D5E3",
-                    background: "#FFFFFF",
+                    background: "#F0F2F8",
                     padding: "0 48px 0 20px",
                     fontSize: 15,
                     color: "#1A1F5E",
                     outline: "none",
+                    fontFamily: "'Montserrat', sans-serif",
                     transition: "border-color 0.2s",
                   }}
                   onFocus={(e) => (e.currentTarget.style.borderColor = "#F97316")}
@@ -178,7 +216,12 @@ export default function Login() {
               <Link
                 to="/forgot-password"
                 className="hover:underline"
-                style={{ color: "#1A1F5E", fontWeight: 700, fontSize: 14 }}
+                style={{
+                  color: "#1A1F5E",
+                  fontWeight: 700,
+                  fontSize: 14,
+                  fontFamily: "'Montserrat', sans-serif",
+                }}
               >
                 ¿Olvidaste tu contraseña?
               </Link>
@@ -197,6 +240,7 @@ export default function Login() {
                 color: "#FFFFFF",
                 fontWeight: 700,
                 fontSize: 16,
+                fontFamily: "'Montserrat', sans-serif",
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
                 boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
