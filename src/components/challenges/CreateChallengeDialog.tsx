@@ -18,7 +18,7 @@ import { Award, X, BookOpen, GraduationCap, Zap, HelpCircle } from "lucide-react
 import { WifiLoadingScreen } from "./WifiLoadingScreen";
 import { QuestionReviewScreen, type ReviewQuestion } from "./QuestionReviewScreen";
 
-const N8N_WEBHOOK_BASE = "https://developerinneva.app.n8n.cloud/webhook-test/01f1bbf5-de79-4f6e-845b-2d2a43b9b73a/unity/reto";
+const N8N_WEBHOOK_BASE = "https://developerinneva.app.n8n.cloud/webhook/f3f514ca-c651-400e-be68-befd878d2025/unity/reto";
 
 const DIFFICULTIES = [
   { value: "Fácil", color: "bg-green-500" },
