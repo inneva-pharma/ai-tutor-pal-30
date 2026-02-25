@@ -2,31 +2,38 @@ import { useState } from "react";
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Rocket, Eye, EyeOff } from "lucide-react";
 
-export default function Login() {
-  const { signIn, session, loading: authLoading } = useAuth();
+export default function Register() {
+  const { signUp, session, loading: authLoading } = useAuth();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [remember, setRemember] = useState(false);
 
   if (authLoading) return null;
   if (session) return <Navigate to="/dashboard" replace />;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      toast({ title: "Error", description: "Las contraseñas no coinciden", variant: "destructive" });
+      return;
+    }
+    if (password.length < 6) {
+      toast({ title: "Error", description: "La contraseña debe tener al menos 6 caracteres", variant: "destructive" });
+      return;
+    }
     setLoading(true);
-    const { error } = await signIn(email, password);
+    const { error } = await signUp(email, password);
     setLoading(false);
     if (error) {
-      toast({ title: "Error", description: "Email o contraseña incorrectos", variant: "destructive" });
+      toast({ title: "Error", description: error.message || "No se pudo crear la cuenta", variant: "destructive" });
     } else {
-      toast({ description: "Sesión iniciada correctamente" });
+      toast({ title: "¡Cuenta creada!", description: "Revisa tu correo para confirmar tu cuenta." });
     }
   };
 
@@ -41,7 +48,6 @@ export default function Login() {
       {/* Left branding — hidden on mobile */}
       <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center pr-8 md:flex">
         <div className="flex flex-col items-center">
-          {/* Mascot placeholder */}
           <div className="mb-4 flex h-80 w-80 items-center justify-center">
             <img
               src="/assets/mascot.png"
@@ -74,7 +80,7 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right login card */}
+      {/* Right register card */}
       <div className="relative z-10 flex w-full items-center justify-start pl-8 md:w-[50%]">
         <div
           className="w-[90%]"
@@ -86,19 +92,17 @@ export default function Login() {
             boxShadow: "0 8px 40px rgba(0,0,0,0.12)",
           }}
         >
-          {/* Header */}
           <div className="mb-6 text-center">
             <div className="flex items-center justify-center gap-2">
-              <span style={{ color: "#1A1F5E", fontSize: 28, fontWeight: 700 }}>¡Hola!</span>
+              <span style={{ color: "#1A1F5E", fontSize: 28, fontWeight: 700 }}>¡Regístrate!</span>
               <div className="flex items-center justify-center rounded-full" style={{ width: 36, height: 36, background: "#F97316" }}>
                 <span className="font-bold text-white" style={{ fontSize: 16 }}>M</span>
               </div>
             </div>
-            <p style={{ color: "#6B7EC8", fontSize: 14, marginTop: 4 }}>Ingresa a tu cuenta para continuar</p>
+            <p style={{ color: "#6B7EC8", fontSize: 14, marginTop: 4 }}>Crea tu cuenta para empezar</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Email */}
             <div>
               <label style={{ color: "#1A1F5E", fontSize: 14, fontWeight: 500, marginBottom: 6, display: "block" }}>Email</label>
               <input
@@ -110,7 +114,6 @@ export default function Login() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label style={{ color: "#1A1F5E", fontSize: 14, fontWeight: 500, marginBottom: 6, display: "block" }}>Contraseña</label>
               <div className="relative">
@@ -131,31 +134,17 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Checkbox */}
-            <div className="flex items-center gap-2">
-              <Checkbox
-                id="remember"
-                checked={remember}
-                onCheckedChange={(v) => setRemember(v === true)}
-                className="h-5 w-5 rounded border-[#D0D5DD] data-[state=checked]:bg-[#F97316] data-[state=checked]:border-[#F97316]"
+            <div>
+              <label style={{ color: "#1A1F5E", fontSize: 14, fontWeight: 500, marginBottom: 6, display: "block" }}>Confirmar contraseña</label>
+              <input
+                type={showPassword ? "text" : "password"}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                className="login-input"
               />
-              <label htmlFor="remember" className="cursor-pointer" style={{ color: "#1A1F5E", fontSize: 14 }}>
-                Recordar acceso
-              </label>
             </div>
 
-            {/* Forgot password */}
-            <div className="text-right">
-              <Link
-                to="/forgot-password"
-                className="hover:underline"
-                style={{ color: "#1A1F5E", fontWeight: 700, fontSize: 13 }}
-              >
-                ¿Contraseña olvidada?
-              </Link>
-            </div>
-
-            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
@@ -164,21 +153,20 @@ export default function Login() {
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  Entrando...
+                  Creando cuenta...
                 </>
               ) : (
                 <>
                   <Rocket className="mr-2 h-5 w-5" />
-                  Entrar
+                  Crear cuenta
                 </>
               )}
             </button>
 
-            {/* Register link */}
             <p className="text-center" style={{ fontSize: 13, marginTop: 16 }}>
-              <span style={{ color: "#8A8A8A" }}>¿No tienes cuenta? </span>
-              <Link to="/register" className="cursor-pointer" style={{ color: "#F97316", fontWeight: 700 }}>
-                ¡Regístrate ahora!
+              <span style={{ color: "#8A8A8A" }}>¿Ya tienes cuenta? </span>
+              <Link to="/login" className="cursor-pointer" style={{ color: "#F97316", fontWeight: 700 }}>
+                ¡Inicia sesión!
               </Link>
             </p>
           </form>
