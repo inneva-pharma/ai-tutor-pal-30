@@ -6,8 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const N8N_WEBHOOK_BASE =
-  "https://developerinneva.app.n8n.cloud/webhook/01f1bbf5-de79-4f6e-845b-2d2a43b9b73a/unity/reto";
+const N8N_WEBHOOK_BASE = "https://developerinneva.app.n8n.cloud/webhook";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -24,13 +23,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } }
-    );
+    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
+      global: { headers: { Authorization: authHeader } },
+    });
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
     if (authError || !user) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
@@ -43,12 +43,9 @@ Deno.serve(async (req) => {
     const accion = body.accion || "generar";
 
     // Forward to n8n
-    const n8nResponse = await fetch(`${N8N_WEBHOOK_BASE}/${accion}`, {
+    const n8nResponse = await fetch(`${N8N_WEBHOOK_BASE}/unity/reto/${accion}`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: authHeader,
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
     });
 
@@ -57,10 +54,10 @@ Deno.serve(async (req) => {
     if (!contentType.includes("application/json")) {
       const text = await n8nResponse.text();
       console.error("n8n returned non-JSON:", text.substring(0, 300));
-      return new Response(
-        JSON.stringify({ error: "n8n returned unexpected format", status: n8nResponse.status }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "n8n returned unexpected format", status: n8nResponse.status }), {
+        status: 502,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
     const data = await n8nResponse.json();
@@ -71,9 +68,9 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("n8n-proxy error:", err);
-    return new Response(
-      JSON.stringify({ error: err.message || "Internal error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: err.message || "Internal error" }), {
+      status: 500,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
