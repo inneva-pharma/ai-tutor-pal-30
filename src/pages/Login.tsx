@@ -28,7 +28,7 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ background: "#1A2040" }}>
+    <div className="flex min-h-screen bg-cover bg-center bg-no-repeat" style={{ backgroundImage: "url('/assets/background-login.png')" }}>
 
       {/* Left branding — hidden on mobile */}
       <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center md:flex">
