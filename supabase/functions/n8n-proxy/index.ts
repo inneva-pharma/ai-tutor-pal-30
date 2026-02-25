@@ -13,6 +13,12 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  if (req.method === "GET") {
+    return new Response(JSON.stringify({ ok: true, version: "DEBUG-1" }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     // Verify auth
     const authHeader = req.headers.get("authorization");
