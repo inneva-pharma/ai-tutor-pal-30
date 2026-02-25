@@ -39,26 +39,12 @@ export default function Login() {
             alt="MiniTeacher robot con tablet"
             className="h-80 w-auto object-contain drop-shadow-2xl"
           />
-          {/* Logo with miniteacher shape */}
-          <div className="flex items-center gap-3">
-            <img
-              src="/assets/miniteacher-shape.png"
-              alt="MiniTeacher shape"
-              className="h-14 w-auto object-contain"
-            />
-            <h1
-              className="select-none"
-              style={{
-                fontFamily: "'MuseoModerno', sans-serif",
-                fontSize: 38,
-                fontWeight: 700,
-                color: "#FFFFFF",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              min<span style={{ color: "#F97316" }}>i</span> teacher
-            </h1>
-          </div>
+          {/* Logo miniteacher no shape (text logo below robot) */}
+          <img
+            src="/assets/miniteacher-no-shape.png"
+            alt="MiniTeacher logo"
+            className="h-12 w-auto object-contain"
+          />
         </div>
       </div>
 
@@ -86,20 +72,11 @@ export default function Login() {
               >
                 ¡Hola!
               </span>
-              <div
-                className="flex items-center justify-center rounded-full"
-                style={{
-                  width: "clamp(32px, 4vw, 40px)",
-                  height: "clamp(32px, 4vw, 40px)",
-                  background: "#F97316",
-                }}
-              >
-                <img
-                  src="/assets/miniteacher-no-shape.png"
-                  alt="MiniTeacher icon"
-                  className="h-6 w-6 object-contain"
-                />
-              </div>
+              <img
+                src="/assets/miniteacher-shape.png"
+                alt="MiniTeacher"
+                className="h-8 w-auto object-contain sm:h-9"
+              />
             </div>
             <p
               style={{
@@ -122,9 +99,9 @@ export default function Login() {
               className="h-28 w-28 object-contain drop-shadow-lg"
             />
             <img
-              src="/assets/miniteacher-shape.png"
-              alt="MiniTeacher"
-              className="h-8 w-auto object-contain"
+              src="/assets/miniteacher-no-shape.png"
+              alt="MiniTeacher logo"
+              className="h-6 w-auto object-contain"
             />
           </div>
 
