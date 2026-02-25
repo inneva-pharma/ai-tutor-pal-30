@@ -96,7 +96,7 @@ export default function Login() {
                 fontFamily: "'Montserrat', sans-serif",
               }}
             >
-              Ingresa a tu cuenta para continuar
+              Introduce tus datos para acceder
             </p>
           </div>
 
