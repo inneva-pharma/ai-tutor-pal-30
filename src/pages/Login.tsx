@@ -39,7 +39,7 @@ export default function Login() {
       }} />
 
       {/* Left branding — hidden on mobile */}
-      <div className="relative z-10 hidden w-[50%] flex-col items-center justify-end pr-8 md:flex">
+      <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center pr-8 md:flex">
         <div className="flex flex-col items-center">
           {/* Mascot placeholder */}
           <div className="mb-4 flex h-80 w-80 items-center justify-center">
