@@ -174,13 +174,6 @@ export default function Login() {
               )}
             </button>
 
-            {/* Register link */}
-            <p className="text-center" style={{ fontSize: 13, marginTop: 16 }}>
-              <span style={{ color: "#8A8A8A" }}>¿No tienes cuenta? </span>
-              <Link to="/register" className="cursor-pointer" style={{ color: "#F97316", fontWeight: 700 }}>
-                ¡Regístrate ahora!
-              </Link>
-            </p>
           </form>
         </div>
       </div>
