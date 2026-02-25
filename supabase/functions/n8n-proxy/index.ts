@@ -6,7 +6,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const N8N_WEBHOOK_BASE = "https://developerinneva.app.n8n.cloud/webhook";
+const N8N_WEBHOOK_BASE = "https://developerinneva.app.n8n.cloud/webhook/01f1bbf5-de79-4f6e-845b-2d2a43b9b73a";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
