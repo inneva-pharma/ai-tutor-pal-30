@@ -13,6 +13,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import Dashboard from "./pages/Dashboard";
 import Placeholder from "./pages/Placeholder";
+import Challenges from "./pages/Challenges";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -55,7 +56,7 @@ const App = () => (
               path="/challenges/*"
               element={
                 <ProtectedRoute>
-                  <AppLayout><Placeholder title="Retos" /></AppLayout>
+                  <AppLayout><Challenges /></AppLayout>
                 </ProtectedRoute>
               }
             />
