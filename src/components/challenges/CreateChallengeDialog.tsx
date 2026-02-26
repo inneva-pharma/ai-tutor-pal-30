@@ -42,6 +42,13 @@ function getAllowedSubjects(gradeName: string): string[] | null {
   return null; // FP Básica, Otro → todas las asignaturas
 }
 
+function getEtapa(gradeName: string): string {
+  if (gradeName.includes("Primaria")) return "Primaria";
+  if (gradeName.includes("ESO")) return "ESO";
+  if (gradeName.includes("Bachillerato")) return "Bachillerato";
+  return gradeName;
+}
+
 type Phase = "form" | "loading";
 
 export interface ChallengeFormSnapshot {
@@ -198,6 +205,7 @@ export function CreateChallengeDialog({ open, onOpenChange, onGenerated, default
           user_id: user.id,
           name: name.trim(),
           topic: topic.trim(),
+          etapa: getEtapa(gradeName),
           grade: gradeName,
           subject: subjectName,
           subject_id: resolvedSubjectId,
@@ -207,12 +215,16 @@ export function CreateChallengeDialog({ open, onOpenChange, onGenerated, default
         }),
       });
 
+      const rawText = await n8nResponse.text();
+      console.log("n8n raw response", n8nResponse.status, rawText);
+
       if (!n8nResponse.ok) {
-        const errText = await n8nResponse.text();
-        console.error("n8n error", n8nResponse.status, errText);
-        throw new Error(`Error ${n8nResponse.status}: ${errText.slice(0, 200)}`);
+        throw new Error(`Error ${n8nResponse.status}: ${rawText.slice(0, 300)}`);
       }
-      const n8nResult = await n8nResponse.json();
+      if (!rawText.trim()) {
+        throw new Error("n8n devolvió una respuesta vacía. Revisa que el workflow esté activo y tenga un nodo 'Respond to Webhook'.");
+      }
+      const n8nResult = JSON.parse(rawText);
       const preguntas: any[] = n8nResult?.preguntas ?? [];
 
       if (preguntas.length === 0) {

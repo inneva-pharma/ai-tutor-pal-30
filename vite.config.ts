@@ -11,6 +11,13 @@ export default defineConfig(({ mode }) => ({
     hmr: {
       overlay: false,
     },
+    proxy: {
+      "/n8n": {
+        target: "https://developerinneva.app.n8n.cloud",
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/n8n/, ""),
+      },
+    },
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
   resolve: {
