@@ -31,7 +31,7 @@ export default function Login() {
     <div
       className="flex min-h-screen"
       style={{
-        backgroundImage: "url('/assets/background1.png')",
+        backgroundImage: "url('/assets/background-login.png')",
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",

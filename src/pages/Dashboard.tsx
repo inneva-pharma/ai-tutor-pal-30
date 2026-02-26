@@ -1,6 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Bot, Target, BookOpen, Search } from "lucide-react";
+import { CustomIcon } from "@/components/CustomIcon";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -9,9 +9,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       {/* Hero card */}
-      <Card className="overflow-hidden border-border shadow-sm">
-        <CardContent className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-4">
+      <Card className="relative overflow-hidden border-border shadow-sm">
+        <CardContent className="relative flex flex-col gap-0 p-6 md:flex-row md:items-center md:justify-between md:gap-6">
+          {/* Text + buttons */}
+          <div className="relative z-10 space-y-4">
             <h1
               style={{
                 fontFamily: "'MuseoModerno', sans-serif",
@@ -37,7 +38,7 @@ export default function Dashboard() {
                     cursor: "pointer",
                   }}
                 >
-                  <BookOpen className="h-4 w-4" />
+                  <CustomIcon src="/assets/IconKnowledge.png" alt="Conocimiento" size={18} color="#FFFFFF" />
                   Mi conocimiento
                 </button>
               </Link>
@@ -54,20 +55,18 @@ export default function Dashboard() {
                     cursor: "pointer",
                   }}
                 >
-                  <Search className="h-4 w-4" />
+                  <CustomIcon src="/assets/IconRocket.png" alt="Explorar" size={18} color="#FFFFFF" />
                   Explorar
                 </button>
               </Link>
             </div>
           </div>
-          {/* Robot image */}
-          <div className="hidden md:block">
-            <img
-              src="/assets/robot-tablet.png"
-              alt="MiniTeacher robot"
-              className="h-40 w-auto object-contain drop-shadow-lg"
-            />
-          </div>
+          {/* Robot — mobile: overlaps buttons slightly from right; desktop: normal */}
+          <img
+            src="/assets/robot-tablet.png"
+            alt="MiniTeacher robot"
+            className="absolute right-2 bottom-0 h-28 w-auto object-contain drop-shadow-lg md:relative md:right-auto md:bottom-auto md:h-40"
+          />
         </CardContent>
       </Card>
 
@@ -77,7 +76,7 @@ export default function Dashboard() {
           <Card className="group cursor-pointer border-border shadow-sm transition-shadow hover:shadow-md">
             <CardContent className="flex items-center gap-5 p-6">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center">
-                <Target className="h-12 w-12 text-cta" strokeWidth={1.5} />
+                <CustomIcon src="/assets/IconChallenges.png" alt="Retos" size={48} color="#F97316" />
               </div>
               <div>
                 <h3
@@ -108,7 +107,7 @@ export default function Dashboard() {
           <Card className="group cursor-pointer border-border shadow-sm transition-shadow hover:shadow-md">
             <CardContent className="flex items-center gap-5 p-6">
               <div className="flex h-16 w-16 shrink-0 items-center justify-center">
-                <Bot className="h-12 w-12 text-cta" strokeWidth={1.5} />
+                <CustomIcon src="/assets/IconChat.png" alt="Miniteachers" size={48} color="#F97316" />
               </div>
               <div>
                 <h3

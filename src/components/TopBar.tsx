@@ -9,7 +9,7 @@ const pageTitles: Record<string, string> = {
   "/chatbots": "Miniteachers",
   "/challenges": "Retos",
   "/settings": "Configuración",
-  "/admin": "Admin",
+  "/admin": "Panel de administración",
 };
 
 export function TopBar() {
@@ -38,16 +38,23 @@ export function TopBar() {
           {pageTitle}
         </span>
       </div>
-      <span
-        style={{
-          fontFamily: "'MuseoModerno', sans-serif",
-          fontWeight: 700,
-          fontSize: 15,
-          color: "#1A1F5E",
-        }}
-      >
-        ¡Hola {displayName}!
-      </span>
+      <div className="flex items-center gap-2">
+        <span
+          style={{
+            fontFamily: "'MuseoModerno', sans-serif",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "#1A1F5E",
+          }}
+        >
+          ¡Hola {displayName}!
+        </span>
+        <img
+          src="/assets/miniteacher-shape.png"
+          alt="MiniTeacher"
+          className="h-7 w-7 object-contain"
+        />
+      </div>
     </header>
   );
 }
