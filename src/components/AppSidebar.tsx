@@ -44,7 +44,7 @@ export function AppSidebar() {
             {initials}
           </div>
         </div>
-        <p className="mt-1 text-sm font-semibold text-primary">{displayName}</p>
+        <p className="mt-1 text-sm font-semibold text-primary" style={{ fontFamily: "'Montserrat Alternates', sans-serif" }}>{displayName}</p>
       </SidebarHeader>
 
       <SidebarContent>
@@ -60,7 +60,7 @@ export function AppSidebar() {
                   >
                     <NavLink to={item.url}>
                       <item.icon className="h-5 w-5" />
-                      <span className="font-medium">{item.title}</span>
+                      <span className="font-medium" style={{ fontFamily: "'Montserrat Alternates', sans-serif" }}>{item.title}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -74,7 +74,7 @@ export function AppSidebar() {
                   >
                     <NavLink to="/admin">
                       <Shield className="h-5 w-5" />
-                      <span className="font-medium">Admin</span>
+                      <span className="font-medium" style={{ fontFamily: "'Montserrat Alternates', sans-serif" }}>Admin</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -96,7 +96,7 @@ export function AppSidebar() {
                 >
                   <NavLink to="/settings">
                     <Settings className="h-5 w-5" />
-                    <span className="font-medium">Configuración</span>
+                    <span className="font-medium" style={{ fontFamily: "'Montserrat Alternates', sans-serif" }}>Configuración</span>
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>

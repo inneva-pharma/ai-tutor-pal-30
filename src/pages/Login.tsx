@@ -28,11 +28,19 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen" style={{ background: "#1A2040" }}>
+    <div
+      className="flex min-h-screen"
+      style={{
+        backgroundImage: "url('/assets/background1.png')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      }}
+    >
 
       {/* Left branding — hidden on mobile */}
       <div className="relative z-10 hidden w-[50%] flex-col items-center justify-center md:flex">
-        <div className="flex flex-col items-center gap-4">
+        <div className="flex flex-col items-center gap-6">
           <img
             src="/assets/robot-tablet.png"
             alt="MiniTeacher robot con tablet"
@@ -64,7 +72,7 @@ export default function Login() {
           style={{
             background: "#FFFFFF",
             borderRadius: 28,
-            padding: "clamp(52px, 6vw, 52px) clamp(24px, 5vw, 48px) clamp(32px, 5vw, 52px)",
+            padding: "clamp(44px, 5vw, 52px) clamp(24px, 5vw, 48px) clamp(36px, 5vw, 52px)",
             boxShadow: "0 12px 48px rgba(0,0,0,0.25)",
           }}
         >
@@ -74,9 +82,9 @@ export default function Login() {
               <span
                 style={{
                   color: "#1A1F5E",
-                  fontSize: "clamp(24px, 4vw, 32px)",
+                  fontSize: "clamp(26px, 4vw, 34px)",
                   fontWeight: 700,
-                  fontFamily: "'Montserrat', sans-serif",
+                  fontFamily: "'MuseoModerno', sans-serif",
                 }}
               >
                 ¡Hola!
@@ -91,12 +99,13 @@ export default function Login() {
               style={{
                 color: "#5A6A9A",
                 fontSize: "clamp(13px, 1.5vw, 15px)",
-                marginTop: 6,
+                marginTop: 8,
                 fontWeight: 500,
-                fontFamily: "'Montserrat', sans-serif",
+                fontStyle: "italic",
+                fontFamily: "'Montserrat Alternates', sans-serif",
               }}
             >
-              Introduce tus datos para acceder
+              Ingresa a tu cuenta para continuar
             </p>
           </div>
 
@@ -108,8 +117,8 @@ export default function Login() {
                 style={{
                   color: "#1A1F5E",
                   fontSize: 14,
-                  fontWeight: 600,
-                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 700,
+                  fontFamily: "'Montserrat Alternates', sans-serif",
                 }}
               >
                 Usuario
@@ -119,6 +128,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                placeholder="correo@ejemplo.com"
                 style={{
                   width: "100%",
                   height: 48,
@@ -144,8 +154,8 @@ export default function Login() {
                 style={{
                   color: "#1A1F5E",
                   fontSize: 14,
-                  fontWeight: 600,
-                  fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 700,
+                  fontFamily: "'Montserrat Alternates', sans-serif",
                 }}
               >
                 Contraseña
@@ -156,6 +166,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  placeholder="••••••••"
                   style={{
                     width: "100%",
                     height: 48,
@@ -192,7 +203,7 @@ export default function Login() {
                   color: "#1A1F5E",
                   fontWeight: 700,
                   fontSize: 14,
-                  fontFamily: "'Montserrat', sans-serif",
+                  fontFamily: "'Montserrat Alternates', sans-serif",
                 }}
               >
                 ¿Olvidaste tu contraseña?
@@ -211,8 +222,8 @@ export default function Login() {
                 background: "linear-gradient(135deg, #FF8C42, #F97316)",
                 color: "#FFFFFF",
                 fontWeight: 700,
-                fontSize: 16,
-                fontFamily: "'Montserrat', sans-serif",
+                fontSize: 17,
+                fontFamily: "'MuseoModerno', sans-serif",
                 border: "none",
                 cursor: loading ? "not-allowed" : "pointer",
                 boxShadow: "0 4px 16px rgba(249,115,22,0.35)",

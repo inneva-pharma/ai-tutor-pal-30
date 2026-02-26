@@ -42,6 +42,41 @@
 /* Montserrat Alternates */
 @font-face {
   font-family: 'Montserrat Alternates';
+  src: url('/fonts/MontserratAlternates-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Alternates';
+  src: url('/fonts/MontserratAlternates-Italic.ttf') format('truetype');
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Alternates';
+  src: url('/fonts/MontserratAlternates-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Alternates';
+  src: url('/fonts/MontserratAlternates-MediumItalic.ttf') format('truetype');
+  font-weight: 500;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Alternates';
+  src: url('/fonts/MontserratAlternates-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Montserrat Alternates';
   src: url('/fonts/MontserratAlternates-Bold.ttf') format('truetype');
   font-weight: 700;
   font-style: normal;
@@ -105,13 +140,13 @@
     --success: 145 63% 42%;
     --warning: 38 92% 50%;
 
-    /* Sidebar — white background like reference */
+    /* Sidebar — white background, no colored highlight */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 216 100% 15%;
     --sidebar-primary: 24 95% 53%;       /* orange active */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 210 15% 95%;
-    --sidebar-accent-foreground: 216 100% 15%;
+    --sidebar-accent: 0 0% 100%;         /* white — no visible highlight */
+    --sidebar-accent-foreground: 24 95% 53%; /* orange text on active */
     --sidebar-border: 216 15% 90%;
     --sidebar-ring: 24 95% 53%;
 

@@ -1,7 +1,6 @@
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Bot, Target, BookOpen, Rocket, Search } from "lucide-react";
+import { Bot, Target, BookOpen, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export default function Dashboard() {
@@ -9,45 +8,70 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Hero card — matches reference */}
+      {/* Hero card */}
       <Card className="overflow-hidden border-border shadow-sm">
         <CardContent className="flex flex-col gap-6 p-6 md:flex-row md:items-center md:justify-between">
           <div className="space-y-4">
-            <h1 className="text-2xl font-bold text-primary md:text-3xl">
+            <h1
+              style={{
+                fontFamily: "'MuseoModerno', sans-serif",
+                fontWeight: 700,
+                color: "#1A1F5E",
+              }}
+              className="text-2xl md:text-3xl"
+            >
               ¿Qué te apetece{" "}
               <span className="text-secondary">aprender</span> hoy?
             </h1>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link to="/knowledge">
-                <Button className="h-11 gap-2 rounded-full bg-secondary/80 px-6 font-semibold text-secondary-foreground hover:bg-secondary">
+                <button
+                  className="flex h-11 items-center gap-2 rounded-full px-6 transition-all hover:scale-[1.03] active:scale-[0.97]"
+                  style={{
+                    background: "#7191C2",
+                    color: "#FFFFFF",
+                    fontFamily: "'Montserrat Alternates', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
                   <BookOpen className="h-4 w-4" />
                   Mi conocimiento
-                </Button>
+                </button>
               </Link>
               <Link to="/explore">
-                <Button className="h-11 gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground hover:bg-primary/90">
-                  <Rocket className="h-4 w-4" />
+                <button
+                  className="flex h-11 items-center gap-2 rounded-full px-6 transition-all hover:scale-[1.03] active:scale-[0.97]"
+                  style={{
+                    background: "#1A1F5E",
+                    color: "#FFFFFF",
+                    fontFamily: "'Montserrat Alternates', sans-serif",
+                    fontWeight: 700,
+                    fontSize: 14,
+                    border: "none",
+                    cursor: "pointer",
+                  }}
+                >
+                  <Search className="h-4 w-4" />
                   Explorar
-                </Button>
+                </button>
               </Link>
             </div>
           </div>
+          {/* Robot image */}
           <div className="hidden md:block">
-            {/* Robot mascot placeholder */}
-            <div className="flex h-40 w-40 items-center justify-center rounded-2xl bg-muted/50">
-              <svg viewBox="0 0 100 100" className="h-28 w-28 text-secondary/40" fill="currentColor">
-                <circle cx="50" cy="35" r="25"/>
-                <rect x="30" y="55" width="40" height="30" rx="8"/>
-                <circle cx="40" cy="32" r="5" fill="hsl(185, 90%, 55%)"/>
-                <circle cx="60" cy="32" r="5" fill="hsl(185, 90%, 55%)"/>
-                <text x="50" y="20" textAnchor="middle" fontSize="18" fill="hsl(var(--cta))">?</text>
-              </svg>
-            </div>
+            <img
+              src="/assets/robot-tablet.png"
+              alt="MiniTeacher robot"
+              className="h-40 w-auto object-contain drop-shadow-lg"
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Feature cards row — matches reference */}
+      {/* Feature cards row */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Link to="/challenges">
           <Card className="group cursor-pointer border-border shadow-sm transition-shadow hover:shadow-md">
@@ -56,9 +80,24 @@ export default function Dashboard() {
                 <Target className="h-12 w-12 text-cta" strokeWidth={1.5} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-primary">Retos</h3>
-                <p className="text-sm text-muted-foreground">
-                  Estudia y aprende resolviendo divertidos retos
+                <h3
+                  style={{
+                    fontFamily: "'Montserrat Alternates', sans-serif",
+                    fontWeight: 700,
+                    color: "#1A1F5E",
+                  }}
+                  className="text-lg"
+                >
+                  Retos
+                </h3>
+                <p
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 400,
+                  }}
+                  className="text-sm text-muted-foreground"
+                >
+                  Participa o crea nuevos retos y pon a prueba tus conocimientos de cada asignatura
                 </p>
               </div>
             </CardContent>
@@ -72,9 +111,24 @@ export default function Dashboard() {
                 <Bot className="h-12 w-12 text-cta" strokeWidth={1.5} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-primary">Chat Bot</h3>
-                <p className="text-sm text-muted-foreground">
-                  Pregunta lo que quieras a tu profe robot inteligente
+                <h3
+                  style={{
+                    fontFamily: "'Montserrat Alternates', sans-serif",
+                    fontWeight: 700,
+                    color: "#1A1F5E",
+                  }}
+                  className="text-lg"
+                >
+                  Miniteachers
+                </h3>
+                <p
+                  style={{
+                    fontFamily: "'Montserrat', sans-serif",
+                    fontWeight: 400,
+                  }}
+                  className="text-sm text-muted-foreground"
+                >
+                  Accede o crea nuevos MiniTeacher que te ayudarán con todas tus dudas
                 </p>
               </div>
             </CardContent>
