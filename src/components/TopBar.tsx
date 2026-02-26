@@ -16,10 +16,11 @@ export function TopBar() {
         </button>
       </div>
       <div className="flex items-center gap-2">
-        {/* Mini logo */}
-        <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-cta">
-          <span className="text-xs font-bold text-cta">M</span>
-        </div>
+        <img
+          src="/assets/miniteacher-shape.png"
+          alt="MiniTeacher"
+          className="h-8 w-8 rounded-full object-contain"
+        />
       </div>
     </header>
   );

@@ -14,11 +14,9 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Award, X, BookOpen, GraduationCap, Zap, HelpCircle } from "lucide-react";
+import { Award, X } from "lucide-react";
 import { WifiLoadingScreen } from "./WifiLoadingScreen";
-import { QuestionReviewScreen, type ReviewQuestion } from "./QuestionReviewScreen";
-
-// n8n proxy via Edge Function
+import type { ReviewQuestion } from "./QuestionReviewScreen";
 
 const DIFFICULTIES = [
   { value: "Fácil", color: "bg-green-500" },
@@ -29,30 +27,56 @@ const DIFFICULTIES = [
 
 const LANGUAGES = ["Español", "English", "Français"];
 
-type Phase = "form" | "loading" | "review";
+// DB subject names that represent foreign languages → consolidated as "Lengua Extranjera"
+const FOREIGN_LANG_NAMES = ["Inglés", "Francés", "Alemán"];
+const FOREIGN_LANG_ID = "0"; // virtual ID, never stored directly in DB
+
+const PRIMARY_SUBJECTS = ["Matemáticas", "Lengua Castellana y Literatura", "Ciencias de la Naturaleza", "Ciencias Sociales", "Inglés", "Educación Artística", "Educación Física", "Educación en Valores Cívicos y Éticos", "Religión/Atención Educativa"];
+const ESO_SUBJECTS = ["Matemáticas", "Lengua Castellana y Literatura", "Física y Química", "Biología y Geología", "Geografía e Historia", "Educación Plástica, Visual y Audiovisual", "Tecnología y Digitalización", "Inglés", "Francés", "Alemán", "Música", "Educación Física", "Educación en Valores Cívicos y Éticos", "Religión"];
+const BACHILLER_SUBJECTS = ["Lengua Castellana y Literatura", "Historia de la Filosofía", "Historia de España", "Educación Física", "Matemáticas", "Física", "Química", "Biología", "Geología y CC. Ambientales", "Dibujo Técnico", "Inglés", "Francés", "Alemán", "Filosofía", "Latín", "Griego", "Historia del Arte", "Geografía", "Economía", "Empresa y Diseño de Modelos de Negocio"];
+
+function getAllowedSubjects(gradeName: string): string[] | null {
+  if (gradeName.includes("Primaria")) return PRIMARY_SUBJECTS;
+  if (gradeName.includes("ESO")) return ESO_SUBJECTS;
+  if (gradeName.includes("Bachillerato")) return BACHILLER_SUBJECTS;
+  return null; // FP Básica, Otro → todas las asignaturas
+}
+
+type Phase = "form" | "loading";
+
+export interface ChallengeFormSnapshot {
+  name: string;
+  topic: string;
+  gradeId: string;
+  subjectId: string;
+  gradeName: string;
+  subjectName: string;
+  language: string;
+  difficulty: string;
+  shareWithStudents: boolean;
+}
 
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onCreated: () => void;
+  onGenerated: (questions: ReviewQuestion[], form: ChallengeFormSnapshot) => void;
+  defaultValues?: Partial<ChallengeFormSnapshot>;
 }
 
-export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) {
+export function CreateChallengeDialog({ open, onOpenChange, onGenerated, defaultValues }: Props) {
   const { user } = useAuth();
   const [phase, setPhase] = useState<Phase>("form");
   const [animState, setAnimState] = useState<"closed" | "entering" | "open" | "leaving">("closed");
-  const [generatedQuestions, setGeneratedQuestions] = useState<ReviewQuestion[]>([]);
-  const [challengeId, setChallengeId] = useState<number | null>(null);
-  const [savingQuestions, setSavingQuestions] = useState(false);
 
-  const [name, setName] = useState("");
-  const [topic, setTopic] = useState("");
-  const [gradeId, setGradeId] = useState<string>("");
-  const [subjectId, setSubjectId] = useState<string>("");
-  const [language, setLanguage] = useState("Español");
-  const [questionCount, setQuestionCount] = useState(5);
-  const [difficulty, setDifficulty] = useState("Fácil");
-  const [shareWithStudents, setShareWithStudents] = useState(false);
+  const [name, setName] = useState(defaultValues?.name ?? "");
+  const [topic, setTopic] = useState(defaultValues?.topic ?? "");
+  const [gradeId, setGradeId] = useState<string>(defaultValues?.gradeId ?? "");
+  const [subjectId, setSubjectId] = useState<string>(defaultValues?.subjectId ?? "");
+  const [foreignLang, setForeignLang] = useState("");
+  const [language, setLanguage] = useState(defaultValues?.language ?? "Español");
+  const [questionCount, setQuestionCount] = useState(10);
+  const [difficulty, setDifficulty] = useState(defaultValues?.difficulty ?? "Fácil");
+  const [shareWithStudents, setShareWithStudents] = useState(defaultValues?.shareWithStudents ?? false);
 
   useEffect(() => {
     if (open) {
@@ -86,15 +110,60 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
     },
   });
 
+  // Subjects filtered by the selected grade level
+  const selectedGradeName = grades.find((g) => g.id === parseInt(gradeId))?.name ?? "";
+  const allowedSubjectNames = getAllowedSubjects(selectedGradeName);
+  const filteredSubjects = allowedSubjectNames
+    ? subjects.filter((s) => allowedSubjectNames.includes(s.name))
+    : subjects;
+
+  // Replace individual foreign-language subjects with one "Lengua Extranjera" virtual entry
+  const hasLangSubjects = filteredSubjects.some((s) => FOREIGN_LANG_NAMES.includes(s.name));
+  const consolidatedSubjects: { id: number; name: string }[] = [
+    ...filteredSubjects.filter((s) => !FOREIGN_LANG_NAMES.includes(s.name)),
+    ...(hasLangSubjects ? [{ id: 0, name: "Lengua Extranjera" }] : []),
+  ];
+
+  const isLenguaExtranjera = subjectId === FOREIGN_LANG_ID;
+
+  // Resolve the real DB subject_id when "Lengua Extranjera" is selected
+  const resolveSubjectId = (): number => {
+    if (!isLenguaExtranjera) return parseInt(subjectId);
+    const typed = foreignLang.trim().toLowerCase();
+    const exact = subjects.find((s) => s.name.toLowerCase() === typed);
+    if (exact) return exact.id;
+    return subjects.find((s) => FOREIGN_LANG_NAMES.includes(s.name))?.id ?? 0;
+  };
+
+  const handleGradeChange = (newGradeId: string) => {
+    setGradeId(newGradeId);
+    setForeignLang("");
+    // Reset subject if it doesn't belong to the new grade level
+    const newGradeName = grades.find((g) => g.id === parseInt(newGradeId))?.name ?? "";
+    const allowed = getAllowedSubjects(newGradeName);
+    if (allowed) {
+      const currentSubjectName = subjects.find((s) => s.id === parseInt(subjectId))?.name;
+      if (currentSubjectName && !allowed.includes(currentSubjectName)) {
+        setSubjectId("");
+      }
+    }
+  };
+
   const resetForm = () => {
-    setName(""); setTopic(""); setGradeId(""); setSubjectId("");
-    setLanguage("Español"); setQuestionCount(5); setDifficulty("Fácil");
-    setShareWithStudents(false); setPhase("form"); setGeneratedQuestions([]);
-    setChallengeId(null); setSavingQuestions(false);
+    setName(defaultValues?.name ?? "");
+    setTopic(defaultValues?.topic ?? "");
+    setGradeId(defaultValues?.gradeId ?? "");
+    setSubjectId(defaultValues?.subjectId ?? "");
+    setForeignLang("");
+    setLanguage(defaultValues?.language ?? "Español");
+    setQuestionCount(10);
+    setDifficulty(defaultValues?.difficulty ?? "Fácil");
+    setShareWithStudents(defaultValues?.shareWithStudents ?? false);
+    setPhase("form");
   };
 
   const handleClose = () => {
-    if (phase === "loading" || savingQuestions) return;
+    if (phase === "loading") return;
     resetForm();
     onOpenChange(false);
   };
@@ -105,31 +174,45 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
       toast.error("Completa al menos el nombre, curso y asignatura");
       return;
     }
+    if (isLenguaExtranjera && !foreignLang.trim()) {
+      toast.error("Indica qué lengua extranjera es");
+      return;
+    }
 
     setPhase("loading");
 
     try {
       const gradeName = grades.find((g) => g.id === parseInt(gradeId))?.name ?? "";
-      const subjectName = subjects.find((s) => s.id === parseInt(subjectId))?.name ?? "";
+      const baseSubjectName = subjects.find((s) => s.id === parseInt(subjectId))?.name ?? "";
+      const subjectName = isLenguaExtranjera
+        ? `Lengua Extranjera ${foreignLang.trim()}`
+        : baseSubjectName;
+      const resolvedSubjectId = resolveSubjectId();
 
-      // Call n8n via Edge Function proxy (no DB insert yet)
-      const { data: n8nResult, error: fnError } = await supabase.functions.invoke("n8n-proxy", {
-        body: {
+      const webhookBase = import.meta.env.VITE_N8N_CHALLENGE_WEBHOOK;
+      const n8nResponse = await fetch(`${webhookBase}/generar`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
           accion: "generar",
           user_id: user.id,
           name: name.trim(),
           topic: topic.trim(),
           grade: gradeName,
           subject: subjectName,
-          subject_id: parseInt(subjectId),
+          subject_id: resolvedSubjectId,
           language,
           questionCount,
           difficulty,
-        },
+        }),
       });
 
-      if (fnError) throw new Error(fnError.message || "Error al conectar con el generador");
-
+      if (!n8nResponse.ok) {
+        const errText = await n8nResponse.text();
+        console.error("n8n error", n8nResponse.status, errText);
+        throw new Error(`Error ${n8nResponse.status}: ${errText.slice(0, 200)}`);
+      }
+      const n8nResult = await n8nResponse.json();
       const preguntas: any[] = n8nResult?.preguntas ?? [];
 
       if (preguntas.length === 0) {
@@ -138,74 +221,38 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
         return;
       }
 
-      // Show review screen
-      setGeneratedQuestions(
-        preguntas.map((p: any) => ({
-          pregunta: p.pregunta ?? "",
-          opciones: [
-            p.opciones?.[0] ?? "",
-            p.opciones?.[1] ?? "",
-            p.opciones?.[2] ?? "",
-            p.opciones?.[3] ?? "",
-          ],
-          correctAnswerIndex: p.correctAnswerIndex ?? 0,
-        }))
-      );
-      setPhase("review");
+      const questions: ReviewQuestion[] = preguntas.map((p: any) => ({
+        pregunta: p.pregunta ?? "",
+        opciones: [
+          p.opciones?.[0] ?? "",
+          p.opciones?.[1] ?? "",
+          p.opciones?.[2] ?? "",
+          p.opciones?.[3] ?? "",
+        ],
+        correctAnswerIndex: p.correctAnswerIndex ?? 0,
+        explanation: p.explanation ?? null,
+      }));
+
+      const formSnapshot: ChallengeFormSnapshot = {
+        name: name.trim(),
+        topic: topic.trim(),
+        gradeId,
+        subjectId: String(resolvedSubjectId),
+        gradeName,
+        subjectName,
+        language,
+        difficulty,
+        shareWithStudents,
+      };
+
+      resetForm();
+      onOpenChange(false);
+      onGenerated(questions, formSnapshot);
 
     } catch (err: any) {
       console.error(err);
       setPhase("form");
       toast.error(err.message || "Error al crear el reto");
-    }
-  };
-
-  const handleSaveQuestions = async (editedQuestions: ReviewQuestion[]) => {
-    if (!user) return;
-    setSavingQuestions(true);
-
-    try {
-      // 1. Create the challenge record now
-      const accessPermissions = shareWithStudents ? 1 : 0;
-      const { data: challenge, error: challengeError } = await supabase
-        .from("challenges")
-        .insert({
-          name: name.trim(), topic: topic.trim() || null,
-          grade_id: parseInt(gradeId), subject_id: parseInt(subjectId),
-          language: language === "Español" ? "ES" : language === "English" ? "EN" : "FR",
-          questionCount: editedQuestions.length, difficulty, accessPermissions, user_id: user.id,
-        })
-        .select().single();
-      if (challengeError) throw challengeError;
-
-      // 2. Insert questions
-      const questionsToInsert = editedQuestions.map((q) => ({
-        challenge_id: challenge.id,
-        question: q.pregunta,
-        answer1: q.opciones[0] ?? "",
-        answer2: q.opciones[1] ?? "",
-        answer3: q.opciones[2] ?? "",
-        answer4: q.opciones[3] ?? "",
-        correctAnswer: q.correctAnswerIndex,
-        explanation: null,
-        isInvalidQuestion: false,
-      }));
-
-      const { error } = await supabase
-        .from("challenge_questions")
-        .insert(questionsToInsert);
-
-      if (error) throw error;
-
-      toast.success("¡Reto guardado con éxito!");
-      onCreated();
-      handleClose();
-
-    } catch (err: any) {
-      console.error(err);
-      toast.error(err.message || "Error al guardar las preguntas");
-    } finally {
-      setSavingQuestions(false);
     }
   };
 
@@ -215,7 +262,7 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
   const isLeaving = animState === "leaving";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-8">
       {/* Backdrop */}
       <div
         className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${
@@ -224,9 +271,9 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
         onClick={handleClose}
       />
 
-      {/* Dialog */}
+      {/* Dialog — proportional popup, not full-screen */}
       <div
-        className={`relative z-10 flex max-h-[95vh] w-full max-w-[95vw] flex-col overflow-hidden rounded-2xl bg-card shadow-2xl transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] sm:max-h-[90vh] sm:max-w-lg md:max-w-2xl ${
+        className={`relative z-10 flex max-h-[80vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-card shadow-2xl transition-all duration-400 ease-[cubic-bezier(0.22,1,0.36,1)] md:max-w-2xl ${
           isVisible
             ? "translate-x-0 scale-100 opacity-100"
             : isLeaving
@@ -234,7 +281,6 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
               : "translate-x-[30%] scale-95 opacity-0"
         }`}
       >
-        {/* Close button (hidden during loading) */}
         {phase !== "loading" && (
           <button
             onClick={handleClose}
@@ -245,23 +291,17 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
         )}
 
         {/* Header */}
-        <div className="flex shrink-0 items-center gap-3 bg-primary px-4 py-4 sm:gap-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta shadow-lg sm:h-12 sm:w-12 sm:rounded-2xl md:h-14 md:w-14">
-            <Award className="h-6 w-6 text-cta-foreground sm:h-7 sm:w-7 md:h-8 md:w-8" />
+        <div className="flex shrink-0 items-center gap-3 bg-primary px-5 py-4 sm:gap-4 sm:px-6 sm:py-5">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-cta shadow-lg sm:h-12 sm:w-12 sm:rounded-2xl">
+            <Award className="h-6 w-6 text-cta-foreground sm:h-7 sm:w-7" />
           </div>
           <div className="min-w-0 space-y-0.5">
-            <h2 className="text-lg font-bold text-primary-foreground sm:text-xl md:text-2xl">
-              {phase === "review" ? (
-                <>Revisar <span className="font-extrabold">preguntas</span></>
-              ) : (
-                <>Crear <span className="font-extrabold">nuevo reto</span></>
-              )}
+            <h2 className="text-lg font-bold text-primary-foreground sm:text-xl">
+              Crear <span className="font-extrabold">nuevo reto</span>
             </h2>
             <p className="text-xs text-primary-foreground/60 sm:text-sm">
               {phase === "loading"
                 ? "La IA está preparando tu reto..."
-                : phase === "review"
-                ? "Revisa y edita las preguntas antes de guardar"
                 : "Configura los parámetros para generar un nuevo desafío educativo"}
             </p>
           </div>
@@ -269,8 +309,6 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
 
         {/* Body */}
         <div className="flex-1 overflow-y-auto">
-
-          {/* ── LOADING PHASE ── */}
           {phase === "loading" && (
             <WifiLoadingScreen
               name={name.trim()}
@@ -279,19 +317,8 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
             />
           )}
 
-          {/* ── REVIEW PHASE ── */}
-          {phase === "review" && generatedQuestions.length > 0 && (
-            <QuestionReviewScreen
-              questions={generatedQuestions}
-              onSave={handleSaveQuestions}
-              onCancel={handleClose}
-              saving={savingQuestions}
-            />
-          )}
-
-          {/* ── FORM PHASE ── */}
           {phase === "form" && (
-            <div className="px-4 py-4 sm:px-6 sm:py-5 md:px-8 md:py-6">
+            <div className="px-5 py-4 sm:px-6 sm:py-5">
               <div className="space-y-4 sm:space-y-5">
                 {/* Row 1 */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
@@ -313,7 +340,7 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
                   <div className="space-y-1">
                     <Label className="text-xs font-bold text-primary sm:text-sm">Curso</Label>
-                    <Select value={gradeId} onValueChange={setGradeId}>
+                    <Select value={gradeId} onValueChange={handleGradeChange}>
                       <SelectTrigger className="h-9 rounded-full border-none bg-muted/60 text-sm shadow-inner sm:h-10">
                         <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
@@ -326,12 +353,18 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
                   </div>
                   <div className="space-y-1">
                     <Label className="text-xs font-bold text-primary sm:text-sm">Asignatura</Label>
-                    <Select value={subjectId} onValueChange={setSubjectId}>
+                    <Select
+                      value={subjectId}
+                      onValueChange={(val) => {
+                        setSubjectId(val);
+                        if (val !== FOREIGN_LANG_ID) setForeignLang("");
+                      }}
+                    >
                       <SelectTrigger className="h-9 rounded-full border-none bg-muted/60 text-sm shadow-inner sm:h-10">
                         <SelectValue placeholder="Seleccionar" />
                       </SelectTrigger>
                       <SelectContent>
-                        {subjects.map((s) => (
+                        {consolidatedSubjects.map((s) => (
                           <SelectItem key={s.id} value={String(s.id)}>{s.name}</SelectItem>
                         ))}
                       </SelectContent>
@@ -351,6 +384,19 @@ export function CreateChallengeDialog({ open, onOpenChange, onCreated }: Props) 
                     </Select>
                   </div>
                 </div>
+
+                {/* Campo lengua extranjera — solo visible cuando se selecciona "Lengua Extranjera" */}
+                {isLenguaExtranjera && (
+                  <div className="space-y-1">
+                    <Label className="text-xs font-bold text-primary sm:text-sm">¿Qué lengua extranjera?</Label>
+                    <Input
+                      value={foreignLang}
+                      onChange={(e) => setForeignLang(e.target.value)}
+                      placeholder="Ej: Inglés, Alemán, Francés, Chino..."
+                      className="h-9 rounded-full border-none bg-muted/60 text-sm shadow-inner sm:h-10"
+                    />
+                  </div>
+                )}
 
                 {/* Row 3 */}
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">

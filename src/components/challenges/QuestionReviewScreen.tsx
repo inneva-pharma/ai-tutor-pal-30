@@ -8,6 +8,7 @@ export interface ReviewQuestion {
   pregunta: string;
   opciones: string[];
   correctAnswerIndex: number;
+  explanation?: string | null;
 }
 
 interface Props {

@@ -21,9 +21,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <div className="flex flex-1 flex-col">
           <TopBar />
-          <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
+          <main className="flex flex-1 flex-col overflow-auto pb-20 md:pb-6"
+            style={{ padding: "clamp(12px, 2.5vw, 24px)" }}>
             <div
-              className={`transition-all duration-300 ease-out ${
+              className={`flex w-full min-w-0 flex-1 flex-col transition-all duration-300 ease-out ${
                 isVisible
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-3"
