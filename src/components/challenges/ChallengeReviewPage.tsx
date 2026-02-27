@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Sparkles, Share2, RefreshCw, Check, ChevronLeft, ChevronRight, Pencil, Trash2, Loader2, Plus } from "lucide-react";
 import type { ReviewQuestion } from "./QuestionReviewScreen";
 import type { ChallengeFormSnapshot } from "./CreateChallengeDialog";
+import { ChallengeVisibilityDialog } from "./ChallengeVisibilityDialog";
 
 const DIFFICULTY_COLOR: Record<string, string> = {
   Fácil: "bg-green-500",
@@ -38,7 +39,7 @@ interface Props {
 }
 
 export function ChallengeReviewPage({ questions: initial, form, challengeId, onSaved, onDiscard }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { setBackAction } = useTopBar();
   const [questions, setQuestions] = useState<ReviewQuestion[]>(initial);
 
@@ -55,6 +56,7 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
   const [regeneratingIdx, setRegeneratingIdx] = useState<number | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleteConfirmVisible, setDeleteConfirmVisible] = useState(false);
+  const [showVisibilityDialog, setShowVisibilityDialog] = useState(false);
 
   const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
   const pageStart = (page - 1) * QUESTIONS_PER_PAGE;
@@ -194,10 +196,28 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
     }
   };
 
-  const handleSave = async () => {
+  const handleSave = () => {
+    if (!user) return;
+    // Teachers see the visibility dialog before saving
+    if (profile?.role_id === 2) {
+      setShowVisibilityDialog(true);
+      return;
+    }
+    // Non-teachers save directly
+    performSave({ accessPermissions: form.shareWithStudents ? 1 : 0, selectedClassrooms: [] });
+  };
+
+  const handleVisibilityConfirm = (result: { accessPermissions: number; selectedClassrooms: string[] }) => {
+    setShowVisibilityDialog(false);
+    performSave(result);
+  };
+
+  const performSave = async (visibility: { accessPermissions: number; selectedClassrooms: string[] }) => {
     if (!user) return;
     setSaving(true);
     try {
+      let savedChallengeId = challengeId;
+
       if (challengeId) {
         // ── EDIT MODE: UPDATE challenge + replace questions ──
         const { error: updateError } = await supabase
@@ -207,7 +227,7 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
             topic: form.topic || null,
             questionCount: questions.length,
             difficulty: form.difficulty,
-            accessPermissions: form.shareWithStudents ? 1 : 0,
+            accessPermissions: visibility.accessPermissions,
             lastModificationDate: new Date().toISOString(),
           })
           .eq("id", challengeId);
@@ -235,7 +255,6 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
 
       } else {
         // ── CREATE MODE: INSERT new challenge + questions ──
-        const accessPermissions = form.shareWithStudents ? 1 : 0;
         const { data: challenge, error: challengeError } = await supabase
           .from("challenges")
           .insert({
@@ -246,12 +265,14 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
             language: form.language === "Español" ? "ES" : form.language === "English" ? "EN" : "FR",
             questionCount: questions.length,
             difficulty: form.difficulty,
-            accessPermissions,
+            accessPermissions: visibility.accessPermissions,
             user_id: user.id,
           })
           .select()
           .single();
         if (challengeError) throw challengeError;
+
+        savedChallengeId = challenge.id;
 
         const questionsToInsert = questions.map((q) => ({
           challenge_id: challenge.id,
@@ -269,6 +290,47 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
         if (error) throw error;
       }
 
+      // ── Write share_content for teachers ──
+      if (profile?.role_id === 2 && savedChallengeId) {
+        console.log("[performSave] Writing share_content for challenge", savedChallengeId, "visibility:", visibility);
+
+        // Remove previous share_content entries for this challenge
+        const { error: delError } = await supabase
+          .from("share_content")
+          .delete()
+          .eq("challenge_id", savedChallengeId)
+          .eq("user_id", user.id);
+        if (delError) console.warn("[performSave] delete old share_content error:", delError);
+
+        if (visibility.selectedClassrooms.length > 0) {
+          // Private: one row per selected classroom
+          const rows = visibility.selectedClassrooms.map((letter) => ({
+            challenge_id: savedChallengeId!,
+            classroomLetter: letter,
+            shareContentType: 5,
+            user_id: user.id,
+          }));
+          console.log("[performSave] Inserting private share_content rows:", rows);
+          const { error: shareError } = await supabase.from("share_content").insert(rows);
+          if (shareError) { console.error("[performSave] share_content insert error:", shareError); throw shareError; }
+          console.log("[performSave] share_content inserted OK");
+        } else {
+          // Public: one row for the whole school
+          const row = {
+            challenge_id: savedChallengeId,
+            classroomLetter: null,
+            shareContentType: 4,
+            user_id: user.id,
+          };
+          console.log("[performSave] Inserting public share_content row:", row);
+          const { error: shareError } = await supabase.from("share_content").insert(row);
+          if (shareError) { console.error("[performSave] share_content insert error:", shareError); throw shareError; }
+          console.log("[performSave] share_content inserted OK");
+        }
+      } else {
+        console.log("[performSave] Skipping share_content: role_id=", profile?.role_id, "challengeId=", savedChallengeId);
+      }
+
       toast.success(challengeId ? "¡Reto actualizado con éxito!" : "¡Reto guardado con éxito!");
       onSaved();
     } catch (err: any) {
@@ -280,8 +342,7 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
   };
 
   return (
-    <div className="fixed top-12 left-0 right-0 bottom-0 z-40 flex flex-col bg-background p-3 sm:p-4">
-      <div className="relative flex flex-1 flex-col overflow-hidden rounded-3xl shadow-2xl font-museo">
+    <div className="relative flex flex-col flex-1 min-h-0 w-full overflow-hidden rounded-2xl font-museo">
 
       {/* ── HEADER ── */}
       <div className="shrink-0 bg-primary px-4 py-4 sm:px-6 sm:py-5">
@@ -313,7 +374,7 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
       </div>
 
       {/* ── SCROLLABLE CONTENT ── */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-blue">
 
         {/* Section title */}
         <div className="flex items-center justify-between px-4 py-3 sm:px-6">
@@ -592,6 +653,16 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
         </div>
       )}
 
+      {/* ── VISIBILITY DIALOG — Teacher only ── */}
+      <ChallengeVisibilityDialog
+        open={showVisibilityDialog}
+        gradeId={parseInt(form.gradeId)}
+        gradeName={form.gradeName}
+        schoolId={profile?.schools_id ?? 0}
+        onConfirm={handleVisibilityConfirm}
+        onCancel={() => setShowVisibilityDialog(false)}
+      />
+
       {/* ── CONFIRMATION DIALOG — Delete Challenge ── */}
       {showDeleteConfirm && (
         <div className="absolute inset-0 z-20 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -629,7 +700,6 @@ export function ChallengeReviewPage({ questions: initial, form, challengeId, onS
           </div>
         </div>
       )}
-      </div>
     </div>
   );
 }

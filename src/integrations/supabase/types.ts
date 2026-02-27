@@ -108,6 +108,7 @@ export type Database = {
           createDate: string
           id: number
           isCompleted: boolean | null
+          isReviewed: boolean
           score: number
           totalQuestions: number
           user_id: string
@@ -119,6 +120,7 @@ export type Database = {
           createDate?: string
           id?: number
           isCompleted?: boolean | null
+          isReviewed?: boolean
           score: number
           totalQuestions: number
           user_id: string
@@ -130,6 +132,7 @@ export type Database = {
           createDate?: string
           id?: number
           isCompleted?: boolean | null
+          isReviewed?: boolean
           score?: number
           totalQuestions?: number
           user_id?: string

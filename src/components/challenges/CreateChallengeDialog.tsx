@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { Award, X } from "lucide-react";
+import { Award, X, Info } from "lucide-react";
 import { WifiLoadingScreen } from "./WifiLoadingScreen";
 import type { ReviewQuestion } from "./QuestionReviewScreen";
 
@@ -71,7 +71,7 @@ interface Props {
 }
 
 export function CreateChallengeDialog({ open, onOpenChange, onGenerated, defaultValues }: Props) {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [phase, setPhase] = useState<Phase>("form");
   const [animState, setAnimState] = useState<"closed" | "entering" | "open" | "leaving">("closed");
 
@@ -436,14 +436,23 @@ export function CreateChallengeDialog({ open, onOpenChange, onGenerated, default
                   </div>
                 </div>
 
-                {/* Share toggle */}
-                <div className="flex items-center justify-between rounded-xl bg-muted/40 p-3 sm:rounded-2xl sm:p-4">
-                  <div>
-                    <p className="text-xs font-bold text-primary sm:text-sm">Compartir con compañeros</p>
-                    <p className="text-[11px] text-muted-foreground sm:text-xs">Permitir visibilidad entre alumnos</p>
+                {/* Share toggle / teacher info note */}
+                {profile?.role_id === 2 ? (
+                  <div className="flex items-center gap-3 rounded-xl bg-primary/5 p-3 sm:rounded-2xl sm:p-4">
+                    <Info className="h-5 w-5 shrink-0 text-primary" />
+                    <p className="text-xs text-muted-foreground sm:text-sm">
+                      Al guardar, podrás elegir con quién compartir este reto
+                    </p>
                   </div>
-                  <Switch checked={shareWithStudents} onCheckedChange={setShareWithStudents} />
-                </div>
+                ) : (
+                  <div className="flex items-center justify-between rounded-xl bg-muted/40 p-3 sm:rounded-2xl sm:p-4">
+                    <div>
+                      <p className="text-xs font-bold text-primary sm:text-sm">Compartir con compañeros</p>
+                      <p className="text-[11px] text-muted-foreground sm:text-xs">Permitir visibilidad entre alumnos</p>
+                    </div>
+                    <Switch checked={shareWithStudents} onCheckedChange={setShareWithStudents} />
+                  </div>
+                )}
 
                 {/* Actions */}
                 <div className="flex justify-center gap-3 pb-1 pt-1 sm:gap-4 sm:pt-2">

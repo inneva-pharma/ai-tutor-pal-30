@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTopBar } from "@/contexts/TopBarContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Check, X, ChevronLeft, ChevronRight } from "lucide-react";
@@ -10,6 +10,13 @@ import type { Tables } from "@/integrations/supabase/types";
 
 const OPTION_LABELS = ["A", "B", "C", "D"];
 const QUESTIONS_PER_PAGE = 10;
+
+const DIFFICULTY_COLOR: Record<string, string> = {
+  Fácil: "bg-green-500",
+  Medio: "bg-yellow-400",
+  Difícil: "bg-orange-500",
+  Experto: "bg-red-500",
+};
 
 interface Props {
   challengeId: number;
@@ -31,6 +38,7 @@ type ResultsState = {
 
 export function ChallengePlayPage({ challengeId, onBack }: Props) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { setBackAction } = useTopBar();
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
 
@@ -47,13 +55,16 @@ export function ChallengePlayPage({ challengeId, onBack }: Props) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("challenges")
-        .select("*")
+        .select("*, grades(name), subjects(name)")
         .eq("id", challengeId)
         .single();
       if (error) throw error;
       return data;
     },
   });
+
+  const gradeName = (challenge as any)?.grades?.name ?? "";
+  const subjectName = (challenge as any)?.subjects?.name ?? "";
 
   const { data: questions = [], isLoading } = useQuery({
     queryKey: ["challenge-questions-play", challengeId],
@@ -121,6 +132,11 @@ export function ChallengePlayPage({ challengeId, onBack }: Props) {
           isCorrect: selectedAnswers[i] === q.correctAnswer,
         })),
       });
+
+      // Invalidate caches so completed challenge disappears from student's list
+      queryClient.invalidateQueries({ queryKey: ["completed-challenge-ids"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-challenges"] });
+      queryClient.invalidateQueries({ queryKey: ["shared-challenge-stats"] });
     } catch (err: any) {
       console.error(err);
       toast.error(err.message || "Error al enviar el reto");
@@ -132,25 +148,46 @@ export function ChallengePlayPage({ challengeId, onBack }: Props) {
   // ── RESULTS VIEW ──
   if (results) {
     return (
-      <div className="flex flex-col flex-1 min-h-0 overflow-hidden font-museo">
+      <div className="flex flex-col flex-1 min-h-0 w-full overflow-hidden rounded-2xl font-museo">
 
         {/* Header */}
         <div className="shrink-0 bg-primary px-4 py-4 sm:px-6 sm:py-5">
-          <h1 className="truncate font-montserrat text-lg font-extrabold text-primary-foreground sm:text-xl">
-            Resultados: {challenge?.name}
-          </h1>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <span className="rounded-full bg-primary-foreground/15 px-3.5 py-1.5 text-sm font-bold text-primary-foreground">
-              {results.correctAnswers}/{results.totalQuestions} correctas
+          <div className="min-w-0">
+            <span className="text-sm font-medium text-primary-foreground/50">
+              Resultados:
             </span>
-            <span className="rounded-full bg-cta px-3.5 py-1.5 text-sm font-bold text-cta-foreground">
-              {results.score}%
-            </span>
+            <h1 className="truncate font-montserrat text-lg font-extrabold text-primary-foreground sm:text-xl md:text-2xl">
+              {challenge?.name}
+            </h1>
+            {challenge?.topic && (
+              <p className="mt-0.5 text-sm text-primary-foreground/60">{challenge.topic}</p>
+            )}
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              {subjectName && (
+                <span className="rounded-full bg-primary-foreground/15 px-3.5 py-1.5 text-sm font-semibold text-primary-foreground">
+                  {subjectName}
+                </span>
+              )}
+              {gradeName && (
+                <span className="rounded-full bg-primary-foreground/15 px-3.5 py-1.5 text-sm font-semibold text-primary-foreground">
+                  {gradeName}
+                </span>
+              )}
+              {challenge?.difficulty && (
+                <div className="flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3.5 py-1.5">
+                  <span className="text-sm font-semibold text-primary-foreground">{challenge.difficulty}</span>
+                  <span className={`h-2.5 w-2.5 rounded-full ${DIFFICULTY_COLOR[challenge.difficulty] ?? "bg-gray-400"}`} />
+                </div>
+              )}
+              <span className="rounded-full bg-cta px-3.5 py-1.5 text-sm font-bold text-cta-foreground">
+                {results.correctAnswers}/{results.totalQuestions} · {results.score}%
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Scrollable results */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto scrollbar-blue">
           <div className="space-y-4 px-4 py-4 sm:px-6">
             {results.details.map((d, i) => (
               <div
@@ -233,22 +270,43 @@ export function ChallengePlayPage({ challengeId, onBack }: Props) {
 
   // ── PLAY VIEW ──
   return (
-    <div className="flex flex-col flex-1 min-h-0 overflow-hidden font-museo">
+    <div className="flex flex-col flex-1 min-h-0 w-full overflow-hidden rounded-2xl font-museo">
 
       {/* Header */}
       <div className="shrink-0 bg-primary px-4 py-4 sm:px-6 sm:py-5">
         <div className="min-w-0">
-          <h1 className="truncate font-montserrat text-lg font-extrabold text-primary-foreground sm:text-xl">
+          <span className="text-sm font-medium text-primary-foreground/50">
+            Reto:
+          </span>
+          <h1 className="truncate font-montserrat text-lg font-extrabold text-primary-foreground sm:text-xl md:text-2xl">
             {isLoading ? "Cargando..." : challenge?.name ?? ""}
           </h1>
-          <p className="mt-0.5 text-sm text-primary-foreground/60">
-            {answeredCount} de {questions.length} respondidas
-          </p>
+          {challenge?.topic && (
+            <p className="mt-0.5 text-sm text-primary-foreground/60">{challenge.topic}</p>
+          )}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            {subjectName && (
+              <span className="rounded-full bg-primary-foreground/15 px-3.5 py-1.5 text-sm font-semibold text-primary-foreground">
+                {subjectName}
+              </span>
+            )}
+            {gradeName && (
+              <span className="rounded-full bg-primary-foreground/15 px-3.5 py-1.5 text-sm font-semibold text-primary-foreground">
+                {gradeName}
+              </span>
+            )}
+            {challenge?.difficulty && (
+              <div className="flex items-center gap-1.5 rounded-full bg-primary-foreground/15 px-3.5 py-1.5">
+                <span className="text-sm font-semibold text-primary-foreground">{challenge.difficulty}</span>
+                <span className={`h-2.5 w-2.5 rounded-full ${DIFFICULTY_COLOR[challenge.difficulty] ?? "bg-gray-400"}`} />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Scrollable questions */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto scrollbar-blue">
         <div className="space-y-4 px-4 py-4 sm:px-6">
           {pageQuestions.map((q, localIdx) => {
             const globalIdx = pageStart + localIdx;

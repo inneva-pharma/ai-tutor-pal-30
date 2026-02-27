@@ -278,3 +278,11 @@
   0%, 80%, 100% { transform: scale(0); }
   40% { transform: scale(1); }
 }
+
+@layer utilities {
+  .scrollbar-blue { scrollbar-width: thin; scrollbar-color: #0B2A5B #E6EEF8; }
+  .scrollbar-blue::-webkit-scrollbar { width: 10px; }
+  .scrollbar-blue::-webkit-scrollbar-track { background: #E6EEF8; border-radius: 9999px; }
+  .scrollbar-blue::-webkit-scrollbar-thumb { background: #0B2A5B; border-radius: 9999px; border: 2px solid #E6EEF8; }
+  .scrollbar-blue::-webkit-scrollbar-thumb:hover { background: #103A7A; }
+}
